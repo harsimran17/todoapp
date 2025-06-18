@@ -8,7 +8,7 @@ A Spring Boot application for managing daily todos with a calendar view.
 - Calendar view for date selection
 - Filter todos by date
 - Responsive design with Bootstrap
-- H2 in-memory database
+- PostgreSQL database
 
 ## Technologies Used
 
@@ -16,7 +16,7 @@ A Spring Boot application for managing daily todos with a calendar view.
 - Spring Boot 3.2.3
 - Spring Data JPA
 - Thymeleaf
-- H2 Database
+- PostgreSQL
 - Bootstrap 5
 - FullCalendar
 
@@ -24,6 +24,21 @@ A Spring Boot application for managing daily todos with a calendar view.
 
 - Java 17 or higher
 - Maven
+- PostgreSQL
+
+## Database Setup
+
+1. Install PostgreSQL on your system
+2. Create a new database:
+```sql
+CREATE DATABASE tododb;
+```
+
+3. Update the database configuration in `src/main/resources/application.properties`:
+```properties
+spring.datasource.username=your_username
+spring.datasource.password=your_password
+```
 
 ## Getting Started
 
@@ -49,10 +64,6 @@ mvn spring-boot:run
 
 5. Access the application:
 - Main application: http://localhost:8080/todos
-- H2 Console: http://localhost:8080/h2-console
-  - JDBC URL: jdbc:h2:mem:tododb
-  - Username: sa
-  - Password: (leave empty)
 
 ## Usage
 

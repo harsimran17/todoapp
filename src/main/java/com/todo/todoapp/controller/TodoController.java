@@ -1,6 +1,7 @@
 package com.todo.todoapp.controller;
 
 import com.todo.todoapp.model.Todo;
+import com.todo.todoapp.model.Subtask;
 import com.todo.todoapp.service.TodoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -19,6 +20,7 @@ public class TodoController {
     public String listTodos(Model model) {
         model.addAttribute("todos", todoService.getAllTodos());
         model.addAttribute("newTodo", new Todo());
+        model.addAttribute("newSubtask", new Subtask());
         return "todos";
     }
 
@@ -28,6 +30,7 @@ public class TodoController {
             LocalDate localDate = LocalDate.parse(date);
             model.addAttribute("todos", todoService.getTodosByDate(localDate));
             model.addAttribute("newTodo", new Todo());
+            model.addAttribute("newSubtask", new Subtask());
             model.addAttribute("selectedDate", date);
             return "todos";
         } catch (Exception e) {
@@ -44,6 +47,7 @@ public class TodoController {
     @GetMapping("/edit/{id}")
     public String editTodoForm(@PathVariable Long id, Model model) {
         model.addAttribute("todo", todoService.getTodoById(id).orElseThrow());
+        model.addAttribute("newSubtask", new Subtask());
         return "edit-todo";
     }
 
@@ -64,6 +68,31 @@ public class TodoController {
         Todo todo = todoService.getTodoById(id).orElseThrow();
         todo.setCompleted(!todo.isCompleted());
         todoService.saveTodo(todo);
+        return "redirect:/todos";
+    }
+    
+    // Subtask endpoints
+    @PostMapping("/{todoId}/subtasks")
+    public String addSubtask(@PathVariable Long todoId, @ModelAttribute Subtask subtask) {
+        todoService.addSubtask(todoId, subtask);
+        return "redirect:/todos";
+    }
+    
+    @PostMapping("/subtasks/{subtaskId}/update")
+    public String updateSubtask(@PathVariable Long subtaskId, @ModelAttribute Subtask subtask) {
+        todoService.updateSubtask(subtaskId, subtask);
+        return "redirect:/todos";
+    }
+    
+    @GetMapping("/subtasks/{subtaskId}/delete")
+    public String deleteSubtask(@PathVariable Long subtaskId) {
+        todoService.deleteSubtask(subtaskId);
+        return "redirect:/todos";
+    }
+    
+    @GetMapping("/subtasks/{subtaskId}/toggle")
+    public String toggleSubtaskStatus(@PathVariable Long subtaskId) {
+        todoService.toggleSubtaskStatus(subtaskId);
         return "redirect:/todos";
     }
 } 
