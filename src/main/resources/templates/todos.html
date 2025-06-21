@@ -5,6 +5,70 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .header-section {
+            background: linear-gradient(135deg, #6B73FF 0%, #000DFF 100%);
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            color: white;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .header-title {
+            margin: 0;
+            font-weight: 600;
+            font-size: 2.5rem;
+            letter-spacing: -0.5px;
+        }
+
+        .header-subtitle {
+            margin: 0.5rem 0 0 0;
+            font-weight: 400;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .header-icon {
+            font-size: 2.5rem;
+            margin-right: 1rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .header-right {
+            text-align: right;
+        }
+
+        .task-count {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin: 0;
+        }
+
+        .completed-count {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
         .completed {
             text-decoration: line-through;
             color: #888;
@@ -84,9 +148,28 @@
     </style>
 </head>
 <body>
-    <div class="container-fluid mt-3">
-        <h1 class="mb-4">Todo List</h1>
-        
+    <div class="header-section">
+        <div class="header-content">
+            <div class="header-left">
+                <i class="fas fa-tasks header-icon"></i>
+                <div>
+                    <h1 class="header-title">Todo List</h1>
+                    <p class="header-subtitle">Organize your tasks efficiently</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <p class="task-count" th:with="totalTasks=${#lists.size(todos)}, 
+                                              completedTasks=${#lists.size(todos.?[completed])}">
+                    <span th:text="${totalTasks}">0</span> Total Tasks
+                </p>
+                <p class="completed-count">
+                    <span th:text="${completedTasks}">0</span> Completed
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid">
         <!-- First Row: Calendar and Todos side by side -->
         <div class="row mb-4">
             <!-- Calendar -->
