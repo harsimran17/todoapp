@@ -8,6 +8,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Data
 @Entity
@@ -23,5 +24,6 @@ public class Subtask {
     
     @ManyToOne
     @JoinColumn(name = "todo_id")
+    @JsonBackReference
     private Todo todo;
 } 

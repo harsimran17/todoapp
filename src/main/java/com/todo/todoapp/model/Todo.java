@@ -9,6 +9,7 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import java.time.LocalDate;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Data
 @Entity
@@ -24,5 +25,6 @@ public class Todo {
     private boolean completed;
     
     @OneToMany(mappedBy = "todo", cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Subtask> subtasks;
 } 

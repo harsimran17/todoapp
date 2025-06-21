@@ -252,6 +252,24 @@
                                                     No subtasks yet.
                                                 </div>
                                             </div>
+                                            
+                                            <!-- Add Subtask Form -->
+                                            <div class="subtask-form" th:id="'add-subtask-form-' + ${todo.id}">
+                                                <form th:onsubmit="'handleAddSubtask(event, ' + ${todo.id} + ')'" class="subtask-add-form">
+                                                    <div class="mb-2">
+                                                        <input type="text" class="form-control form-control-sm" 
+                                                               placeholder="Subtask title" name="title" required>
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <textarea class="form-control form-control-sm" 
+                                                                  placeholder="Subtask description" 
+                                                                  name="description" rows="2"></textarea>
+                                                    </div>
+                                                    <button type="submit" class="btn btn-sm btn-primary">Add Subtask</button>
+                                                    <button type="button" class="btn btn-sm btn-secondary" 
+                                                            th:onclick="'toggleAddSubtaskForm(' + ${todo.id} + ')'" >Cancel</button>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="ms-3">
@@ -543,13 +561,13 @@
                                         </div>
                                         <button type="submit" class="btn btn-sm btn-primary">Add Subtask</button>
                                         <button type="button" class="btn btn-sm btn-secondary" 
-                                                th:onclick="'toggleAddSubtaskForm(' + ${todo.id} + ')'">Cancel</button>
+                                                onclick="toggleAddSubtaskForm(${todo.id})">Cancel</button>
                                     </form>
                                 </div>
                             </div>
                         </div>
                         <div class="ms-3">
-                            <button onclick="toggleTodoStatus(${todo.id}, this)" class="btn btn-sm btn-success">
+                            <button class="btn btn-sm btn-success" onclick="toggleTodoStatus(${todo.id}, this)">
                                 Mark Complete
                             </button>
                             <a href="/todos/edit/${todo.id}" class="btn btn-sm btn-primary">Edit</a>
@@ -626,8 +644,8 @@
 
         function handleAddSubtask(event, todoId) {
             event.preventDefault();
-            const form = event.target;
             
+            const form = event.target;
             const formData = {
                 title: form.title.value,
                 description: form.description.value,
@@ -668,8 +686,7 @@
                 if (noSubtasksMessage) {
                     subtasksContent.innerHTML = subtaskHtml;
                 } else {
-                    const subtasksList = subtasksContent.querySelector('div:first-child');
-                    subtasksList.insertAdjacentHTML('beforeend', subtaskHtml);
+                    subtasksContent.querySelector('div:first-child').insertAdjacentHTML('beforeend', subtaskHtml);
                 }
                 
                 // Update subtask count
@@ -680,6 +697,7 @@
                 form.reset();
                 toggleAddSubtaskForm(todoId);
                 
+                // Show success message
                 showAlert('Subtask added successfully!', 'success');
             })
             .catch(error => {
