@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/todos")
@@ -39,9 +40,9 @@ public class TodoController {
     }
 
     @PostMapping
-    public String createTodo(@ModelAttribute Todo todo) {
-        todoService.saveTodo(todo);
-        return "redirect:/todos";
+    @ResponseBody
+    public Todo createTodo(@RequestBody Todo todo) {
+        return todoService.saveTodo(todo);
     }
 
     @GetMapping("/edit/{id}")
@@ -52,47 +53,49 @@ public class TodoController {
     }
 
     @PostMapping("/update/{id}")
-    public String updateTodo(@PathVariable Long id, @ModelAttribute Todo todo) {
-        todoService.updateTodo(id, todo);
-        return "redirect:/todos";
+    @ResponseBody
+    public Todo updateTodo(@PathVariable Long id, @RequestBody Todo todo) {
+        return todoService.updateTodo(id, todo);
     }
 
     @GetMapping("/delete/{id}")
-    public String deleteTodo(@PathVariable Long id) {
+    @ResponseBody
+    public Map<String, Boolean> deleteTodo(@PathVariable Long id) {
         todoService.deleteTodo(id);
-        return "redirect:/todos";
+        return Map.of("success", true);
     }
 
     @GetMapping("/toggle/{id}")
-    public String toggleTodoStatus(@PathVariable Long id) {
+    @ResponseBody
+    public Todo toggleTodoStatus(@PathVariable Long id) {
         Todo todo = todoService.getTodoById(id).orElseThrow();
         todo.setCompleted(!todo.isCompleted());
-        todoService.saveTodo(todo);
-        return "redirect:/todos";
+        return todoService.saveTodo(todo);
     }
     
     // Subtask endpoints
     @PostMapping("/{todoId}/subtasks")
-    public String addSubtask(@PathVariable Long todoId, @ModelAttribute Subtask subtask) {
-        todoService.addSubtask(todoId, subtask);
-        return "redirect:/todos";
+    @ResponseBody
+    public Subtask addSubtask(@PathVariable Long todoId, @RequestBody Subtask subtask) {
+        return todoService.addSubtask(todoId, subtask);
     }
     
     @PostMapping("/subtasks/{subtaskId}/update")
-    public String updateSubtask(@PathVariable Long subtaskId, @ModelAttribute Subtask subtask) {
-        todoService.updateSubtask(subtaskId, subtask);
-        return "redirect:/todos";
+    @ResponseBody
+    public Subtask updateSubtask(@PathVariable Long subtaskId, @RequestBody Subtask subtask) {
+        return todoService.updateSubtask(subtaskId, subtask);
     }
     
     @GetMapping("/subtasks/{subtaskId}/delete")
-    public String deleteSubtask(@PathVariable Long subtaskId) {
+    @ResponseBody
+    public Map<String, Boolean> deleteSubtask(@PathVariable Long subtaskId) {
         todoService.deleteSubtask(subtaskId);
-        return "redirect:/todos";
+        return Map.of("success", true);
     }
     
     @GetMapping("/subtasks/{subtaskId}/toggle")
-    public String toggleSubtaskStatus(@PathVariable Long subtaskId) {
-        todoService.toggleSubtaskStatus(subtaskId);
-        return "redirect:/todos";
+    @ResponseBody
+    public Subtask toggleSubtaskStatus(@PathVariable Long subtaskId) {
+        return todoService.toggleSubtaskStatus(subtaskId);
     }
 } 
