@@ -323,6 +323,30 @@
                         const subtaskTitle = button.closest('.subtask-item').querySelector('span');
                         subtaskTitle.classList.add('completed');
                     }
+
+                    // Check all subtasks status and update parent todo UI
+                    const subtaskContainer = button.closest('.subtask-content');
+                    const allSubtaskItems = subtaskContainer.querySelectorAll('.subtask-item');
+                    const allCompleted = Array.from(allSubtaskItems).every(item => 
+                        item.querySelector('button').textContent.trim() === 'Undo'
+                    );
+
+                    // Update parent todo UI
+                    const todoCard = button.closest('.card');
+                    const todoTitle = todoCard.querySelector('.card-title');
+                    const todoToggleButton = todoCard.querySelector('a[href*="/todos/toggle/"]');
+                    
+                    if (allCompleted) {
+                        todoTitle.classList.add('completed');
+                        todoToggleButton.textContent = 'Mark Incomplete';
+                        todoToggleButton.classList.remove('btn-success');
+                        todoToggleButton.classList.add('btn-warning');
+                    } else {
+                        todoTitle.classList.remove('completed');
+                        todoToggleButton.textContent = 'Mark Complete';
+                        todoToggleButton.classList.remove('btn-warning');
+                        todoToggleButton.classList.add('btn-success');
+                    }
                 } else {
                     console.error('Failed to toggle subtask status');
                 }

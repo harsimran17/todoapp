@@ -78,7 +78,29 @@ public class TodoService {
         Subtask subtask = subtaskRepository.findById(subtaskId)
             .orElseThrow(() -> new RuntimeException("Subtask not found"));
         subtask.setCompleted(!subtask.isCompleted());
-        return subtaskRepository.save(subtask);
+        Subtask savedSubtask = subtaskRepository.save(subtask);
+        
+        // Check and update parent todo status
+        updateParentTodoStatus(subtask.getTodo().getId());
+        
+        return savedSubtask;
+    }
+    
+    private void updateParentTodoStatus(Long todoId) {
+        Todo todo = todoRepository.findById(todoId)
+            .orElseThrow(() -> new RuntimeException("Todo not found"));
+            
+        List<Subtask> subtasks = subtaskRepository.findByTodoId(todoId);
+        
+        if (!subtasks.isEmpty()) {
+            boolean allSubtasksCompleted = subtasks.stream()
+                .allMatch(Subtask::isCompleted);
+            
+            if (allSubtasksCompleted != todo.isCompleted()) {
+                todo.setCompleted(allSubtasksCompleted);
+                todoRepository.save(todo);
+            }
+        }
     }
     
     public List<Subtask> getSubtasksByTodoId(Long todoId) {

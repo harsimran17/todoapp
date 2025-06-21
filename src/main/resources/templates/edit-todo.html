@@ -112,14 +112,25 @@
                         button.className = 'btn btn-sm btn-success';
                         // Remove completed styling from the subtask title
                         const subtaskTitle = button.closest('.subtask-item').querySelector('span');
-                        subtaskTitle.classList.remove('completed');
+                        subtaskTitle.classList.remove('text-decoration-line-through');
                     } else {
                         button.textContent = 'Undo';
                         button.className = 'btn btn-sm btn-warning';
                         // Add completed styling to the subtask title
                         const subtaskTitle = button.closest('.subtask-item').querySelector('span');
-                        subtaskTitle.classList.add('completed');
+                        subtaskTitle.classList.add('text-decoration-line-through');
                     }
+
+                    // Check all subtasks status and update parent todo checkbox
+                    const subtasksSection = button.closest('.mb-3');
+                    const allSubtaskItems = subtasksSection.querySelectorAll('.subtask-item');
+                    const allCompleted = Array.from(allSubtaskItems).every(item => 
+                        item.querySelector('button').textContent.trim() === 'Undo'
+                    );
+
+                    // Update parent todo checkbox
+                    const todoCheckbox = document.getElementById('completed');
+                    todoCheckbox.checked = allCompleted;
                 } else {
                     console.error('Failed to toggle subtask status');
                 }
