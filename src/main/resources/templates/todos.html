@@ -286,6 +286,11 @@
                                                 th:text="${todo.completed ? 'Mark Incomplete' : 'Mark Complete'}"
                                                 th:onclick="'toggleTodoStatus(' + ${todo.id} + ', this)'">
                                         </button>
+                                        <button class="btn btn-sm btn-secondary"
+                                                th:classappend="${todo.wontDo ? 'btn-dark' : ''}"
+                                                th:text="${todo.wontDo ? 'Undo Wont Do' : 'Wont Do'}"
+                                                th:onclick="'toggleWontDoStatus(' + ${todo.id} + ', this)'">
+                                        </button>
                                         <a th:href="@{/todos/edit/{id}(id=${todo.id})}" class="btn btn-sm btn-primary">Edit</a>
                                         <button class="btn btn-sm btn-danger"
                                                 th:onclick="'deleteTodo(' + ${todo.id} + ', this)'">Delete</button>
@@ -483,6 +488,30 @@
             });
         }
 
+        function toggleWontDoStatus(todoId, buttonElement) {
+            fetch(`/todos/wontdo/${todoId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(todo => {
+                if (todo.wontDo) {
+                    buttonElement.textContent = 'Undo Wont Do';
+                    buttonElement.classList.add('btn-dark');
+                } else {
+                    buttonElement.textContent = 'Wont Do';
+                    buttonElement.classList.remove('btn-dark');
+                }
+                showAlert(`Todo marked as ${todo.wontDo ? 'Wont Do' : 'active'}!`, 'info');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('Failed to update Wont Do status. Please try again.', 'danger');
+            });
+        }
+
         function handleAddTodo(event) {
             event.preventDefault();
             
@@ -579,6 +608,11 @@
                         <div class="ms-3">
                             <button class="btn btn-sm btn-success" onclick="toggleTodoStatus(${todo.id}, this)">
                                 Mark Complete
+                            </button>
+                            <button class="btn btn-sm btn-secondary"
+                                    th:classappend="${todo.wontDo ? 'btn-dark' : ''}"
+                                    th:text="${todo.wontDo ? 'Undo Wont Do' : 'Wont Do'}"
+                                    th:onclick="'toggleWontDoStatus(' + ${todo.id} + ', this)'">
                             </button>
                             <a href="/todos/edit/${todo.id}" class="btn btn-sm btn-primary">Edit</a>
                             <button class="btn btn-sm btn-danger" onclick="deleteTodo(${todo.id}, this)">Delete</button>

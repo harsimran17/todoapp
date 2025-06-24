@@ -23,6 +23,7 @@ public class Todo {
     private String description;
     private LocalDate dueDate;
     private boolean completed;
+    private boolean wontDo;
     
     @OneToMany(mappedBy = "todo", cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference

@@ -107,4 +107,10 @@ public class TodoController {
     public Subtask toggleSubtaskStatus(@PathVariable Long subtaskId) {
         return todoService.toggleSubtaskStatus(subtaskId);
     }
+
+    @GetMapping("/wontdo/{id}")
+    @ResponseBody
+    public Todo toggleWontDoStatus(@PathVariable Long id) {
+        return todoService.toggleWontDoStatus(id);
+    }
 } 
