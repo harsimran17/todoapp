@@ -27,6 +27,10 @@ public class TodoService {
         return todoRepository.findByDueDate(date);
     }
     
+    public List<Todo> getBacklogTodos() {
+        return todoRepository.findByCompletedFalseAndDueDateLessThanEqual(LocalDate.now());
+    }
+    
     public Optional<Todo> getTodoById(Long id) {
         return todoRepository.findById(id);
     }

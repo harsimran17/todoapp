@@ -39,6 +39,15 @@ public class TodoController {
         }
     }
 
+    @GetMapping("/backlog")
+    public String listBacklogTodos(Model model) {
+        model.addAttribute("todos", todoService.getBacklogTodos());
+        model.addAttribute("newTodo", new Todo());
+        model.addAttribute("newSubtask", new Subtask());
+        model.addAttribute("isBacklog", true);
+        return "todos";
+    }
+
     @PostMapping
     @ResponseBody
     public Todo createTodo(@RequestBody Todo todo) {
