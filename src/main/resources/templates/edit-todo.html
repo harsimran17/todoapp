@@ -167,6 +167,9 @@
                     </div>
                     
                     <button type="submit" class="btn btn-primary">Update Todo</button>
+                    <button type="button" class="btn btn-secondary" id="wontDoBtn" onclick="toggleWontDoStatusEdit()">
+                        Wont Do
+                    </button>
                     <a th:href="@{/todos}" class="btn btn-secondary">Cancel</a>
                 </form>
             </div>
@@ -377,6 +380,32 @@
                 // Revert checkbox state on error
                 checkbox.checked = !checkbox.checked;
                 showAlert('Failed to update todo status. Please try again.', 'danger');
+            });
+        }
+
+        function toggleWontDoStatusEdit() {
+            const todoId = window.location.pathname.split('/').pop();
+            const button = document.getElementById('wontDoBtn');
+            fetch(`/todos/wontdo/${todoId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(todo => {
+                if (todo.wontDo) {
+                    button.textContent = 'Undo Wont Do';
+                    button.classList.add('btn-dark');
+                } else {
+                    button.textContent = 'Wont Do';
+                    button.classList.remove('btn-dark');
+                }
+                showAlert(`Todo marked as ${todo.wontDo ? 'Wont Do' : 'active'}!`, 'info');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('Failed to update Wont Do status. Please try again.', 'danger');
             });
         }
 

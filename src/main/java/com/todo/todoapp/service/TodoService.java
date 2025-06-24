@@ -110,4 +110,11 @@ public class TodoService {
     public List<Subtask> getSubtasksByTodoId(Long todoId) {
         return subtaskRepository.findByTodoId(todoId);
     }
+    
+    public Todo toggleWontDoStatus(Long id) {
+        Todo todo = todoRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Todo not found"));
+        todo.setWontDo(!todo.isWontDo());
+        return todoRepository.save(todo);
+    }
 } 
