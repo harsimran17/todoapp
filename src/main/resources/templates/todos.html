@@ -399,51 +399,49 @@
                     'Content-Type': 'application/json',
                 }
             })
-            .then(response => {
-                if (response.ok) {
-                    // Toggle the button text and class
-                    const button = buttonElement;
-                    const isCompleted = button.textContent.trim() === 'Undo';
-                    
-                    if (isCompleted) {
-                        button.textContent = 'Complete';
-                        button.className = 'btn btn-sm btn-success';
-                        // Remove completed styling from the subtask title
-                        const subtaskTitle = button.closest('.subtask-item').querySelector('span');
-                        subtaskTitle.classList.remove('completed');
-                    } else {
-                        button.textContent = 'Undo';
-                        button.className = 'btn btn-sm btn-warning';
-                        // Add completed styling to the subtask title
-                        const subtaskTitle = button.closest('.subtask-item').querySelector('span');
-                        subtaskTitle.classList.add('completed');
-                    }
-
-                    // Check all subtasks status and update parent todo UI
-                    const subtaskContainer = button.closest('.subtask-content');
-                    const allSubtaskItems = subtaskContainer.querySelectorAll('.subtask-item');
-                    const allCompleted = Array.from(allSubtaskItems).every(item => 
-                        item.querySelector('button').textContent.trim() === 'Undo'
-                    );
-
-                    // Update parent todo UI
-                    const todoCard = button.closest('.card');
-                    const todoTitle = todoCard.querySelector('.card-title');
-                    const todoToggleButton = todoCard.querySelector('button');
-                    
-                    if (allCompleted) {
-                        todoTitle.classList.add('completed');
-                        todoToggleButton.textContent = 'Mark Incomplete';
-                        todoToggleButton.classList.remove('btn-success');
-                        todoToggleButton.classList.add('btn-warning');
-                    } else {
-                        todoTitle.classList.remove('completed');
-                        todoToggleButton.textContent = 'Mark Complete';
-                        todoToggleButton.classList.remove('btn-warning');
-                        todoToggleButton.classList.add('btn-success');
-                    }
+            .then(response => response.json())
+            .then(subtask => {
+                // Toggle the button text and class
+                const button = buttonElement;
+                const isCompleted = subtask.completed;
+                
+                if (!isCompleted) {
+                    button.textContent = 'Complete';
+                    button.className = 'btn btn-sm btn-success';
+                    // Remove completed styling from the subtask title
+                    const subtaskTitle = button.closest('.subtask-item').querySelector('span');
+                    subtaskTitle.classList.remove('completed');
                 } else {
-                    console.error('Failed to toggle subtask status');
+                    button.textContent = 'Undo';
+                    button.className = 'btn btn-sm btn-warning';
+                    // Add completed styling to the subtask title
+                    const subtaskTitle = button.closest('.subtask-item').querySelector('span');
+                    subtaskTitle.classList.add('completed');
+                }
+
+                // Check all subtasks status and update parent todo UI
+                const subtaskContainer = button.closest('.subtask-content');
+                const allSubtaskItems = subtaskContainer.querySelectorAll('.subtask-item');
+                const allCompleted = Array.from(allSubtaskItems).every(item => 
+                    item.querySelector('button').textContent.trim() === 'Undo'
+                );
+
+                // Update parent todo UI
+                const todoCard = button.closest('.card');
+                const todoTitle = todoCard.querySelector('.card-title');
+                // Use a more specific selector for the parent todo's toggle button
+                const todoToggleButton = todoCard.querySelector('.ms-3 > .btn-success, .ms-3 > .btn-warning');
+                
+                if (allCompleted) {
+                    todoTitle.classList.add('completed');
+                    todoToggleButton.textContent = 'Mark Incomplete';
+                    todoToggleButton.classList.remove('btn-success');
+                    todoToggleButton.classList.add('btn-warning');
+                } else {
+                    todoTitle.classList.remove('completed');
+                    todoToggleButton.textContent = 'Mark Complete';
+                    todoToggleButton.classList.remove('btn-warning');
+                    todoToggleButton.classList.add('btn-success');
                 }
             })
             .catch(error => {
