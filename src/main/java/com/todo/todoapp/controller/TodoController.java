@@ -114,7 +114,7 @@ public class TodoController {
     public Todo toggleWontDoStatus(@PathVariable Long id) {
         return todoService.toggleWontDoStatus(id);
     }
-
+  
     @GetMapping("/{todoId}/subtasks")
     @ResponseBody
     public List<Subtask> getSubtasksByTodoId(@PathVariable Long todoId) {
