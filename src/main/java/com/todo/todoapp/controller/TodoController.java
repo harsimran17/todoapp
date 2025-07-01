@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -112,5 +113,11 @@ public class TodoController {
     @ResponseBody
     public Todo toggleWontDoStatus(@PathVariable Long id) {
         return todoService.toggleWontDoStatus(id);
+    }
+
+    @GetMapping("/{todoId}/subtasks")
+    @ResponseBody
+    public List<Subtask> getSubtasksByTodoId(@PathVariable Long todoId) {
+        return todoService.getSubtasksByTodoId(todoId);
     }
 } 

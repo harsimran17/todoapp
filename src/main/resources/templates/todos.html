@@ -705,44 +705,45 @@
             })
             .then(response => response.json())
             .then(subtask => {
-                // Create new subtask element
-                const subtaskHtml = `
-                    <div class="subtask-item">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <span>${subtask.title}</span>
-                                <small class="text-muted d-block">${subtask.description || ''}</small>
-                            </div>
-                            <div>
-                                <button class="btn btn-sm btn-success" 
-                                        onclick="toggleSubtaskStatus(${subtask.id}, this)">Complete</button>
-                                <button class="btn btn-sm btn-danger"
-                                        onclick="deleteSubtask(${subtask.id}, this)">Delete</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                // Add to subtasks list
-                const subtasksContent = document.getElementById(`subtasks-${todoId}`);
-                const noSubtasksMessage = subtasksContent.querySelector('.text-muted');
-                
-                if (noSubtasksMessage) {
-                    subtasksContent.innerHTML = subtaskHtml;
-                } else {
-                    subtasksContent.querySelector('div:first-child').insertAdjacentHTML('beforeend', subtaskHtml);
-                }
-                
-                // Update subtask count
-                const subtaskCount = form.closest('.mt-3').querySelector('.subtask-count');
-                subtaskCount.textContent = parseInt(subtaskCount.textContent) + 1;
-                
-                // Clear form and hide it
-                form.reset();
-                toggleAddSubtaskForm(todoId);
-                
-                // Show success message
-                showAlert('Subtask added successfully!', 'success');
+                // After adding, fetch the updated subtask list
+                fetch(`/todos/${todoId}/subtasks`)
+                    .then(response => response.json())
+                    .then(subtasks => {
+                        const subtasksContent = document.getElementById(`subtasks-${todoId}`);
+                        let html = '';
+                        if (subtasks.length > 0) {
+                            html += '<div>';
+                            subtasks.forEach(subtask => {
+                                html += `
+                                    <div class="subtask-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <span${subtask.completed ? ' class="completed"' : ''}>${subtask.title}</span>
+                                                <small class="text-muted d-block">${subtask.description || ''}</small>
+                                            </div>
+                                            <div>
+                                                <button class="btn btn-sm ${subtask.completed ? 'btn-warning' : 'btn-success'}" 
+                                                        onclick="toggleSubtaskStatus(${subtask.id}, this)">${subtask.completed ? 'Undo' : 'Complete'}</button>
+                                                <button class="btn btn-sm btn-danger"
+                                                        onclick="deleteSubtask(${subtask.id}, this)">Delete</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            html += '</div>';
+                        } else {
+                            html = '<div class="text-muted">No subtasks yet.</div>';
+                        }
+                        subtasksContent.innerHTML = html;
+                        // Update subtask count
+                        const subtaskCount = form.closest('.mt-3').querySelector('.subtask-count');
+                        subtaskCount.textContent = subtasks.length;
+                        // Clear form and hide it
+                        form.reset();
+                        toggleAddSubtaskForm(todoId);
+                        showAlert('Subtask added successfully!', 'success');
+                    });
             })
             .catch(error => {
                 console.error('Error:', error);
