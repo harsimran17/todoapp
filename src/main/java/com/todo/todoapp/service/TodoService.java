@@ -28,7 +28,7 @@ public class TodoService {
     }
     
     public List<Todo> getBacklogTodos() {
-        return todoRepository.findByCompletedFalseAndDueDateLessThanEqual(LocalDate.now());
+        return todoRepository.findByCompletedFalseAndDueDateLessThanEqualAndWontDoFalseOrderByDueDateAsc(LocalDate.now());
     }
     
     public Optional<Todo> getTodoById(Long id) {
