@@ -398,45 +398,38 @@
         }
 
         function toggleSubtaskStatus(subtaskId, buttonElement) {
-            fetch(`/todos/subtasks/${subtaskId}/toggle`, {
-                method: 'GET',
+            const currentlyCompleted = buttonElement.classList.contains('btn-warning');
+            const desired = !currentlyCompleted;
+            fetch(`/todos/subtasks/${subtaskId}`, {
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
-                }
+                },
+                body: JSON.stringify({ completed: desired })
             })
             .then(response => response.json())
             .then(subtask => {
-                // Toggle the button text and class
                 const button = buttonElement;
                 const isCompleted = subtask.completed;
-                
                 if (!isCompleted) {
                     button.textContent = 'Complete';
                     button.className = 'btn btn-sm btn-success';
-                    // Remove completed styling from the subtask title
                     const subtaskTitle = button.closest('.subtask-item').querySelector('span');
                     subtaskTitle.classList.remove('completed');
                 } else {
                     button.textContent = 'Undo';
                     button.className = 'btn btn-sm btn-warning';
-                    // Add completed styling to the subtask title
                     const subtaskTitle = button.closest('.subtask-item').querySelector('span');
                     subtaskTitle.classList.add('completed');
                 }
-
-                // Check all subtasks status and update parent todo UI
                 const subtaskContainer = button.closest('.subtask-content');
                 const allSubtaskItems = subtaskContainer.querySelectorAll('.subtask-item');
                 const allCompleted = Array.from(allSubtaskItems).every(item => 
                     item.querySelector('button').textContent.trim() === 'Undo'
                 );
-
-                // Update parent todo UI
                 const todoCard = button.closest('.card');
                 const todoTitle = todoCard.querySelector('.card-title');
-                // Use a more specific selector for the parent todo's toggle button
                 const todoToggleButton = todoCard.querySelector('.ms-3 > .btn-success, .ms-3 > .btn-warning');
-                
                 if (allCompleted) {
                     todoTitle.classList.add('completed');
                     todoToggleButton.textContent = 'Mark Incomplete';
@@ -455,17 +448,19 @@
         }
 
         function toggleTodoStatus(todoId, buttonElement) {
-            fetch(`/todos/toggle/${todoId}`, {
-                method: 'GET',
+            const currentlyCompleted = buttonElement.classList.contains('btn-warning');
+            const desired = !currentlyCompleted;
+            fetch(`/todos/${todoId}`, {
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
-                }
+                },
+                body: JSON.stringify({ completed: desired })
             })
             .then(response => response.json())
             .then(todo => {
                 const todoCard = buttonElement.closest('.card');
                 const todoTitle = todoCard.querySelector('.card-title');
-                
                 if (todo.completed) {
                     buttonElement.textContent = 'Mark Incomplete';
                     buttonElement.classList.remove('btn-success');
@@ -479,7 +474,6 @@
                     todoTitle.classList.remove('completed');
                     updateTaskCount(0, -1);
                 }
-                
                 showAlert(`Todo marked as ${todo.completed ? 'completed' : 'incomplete'}!`, 'success');
             })
             .catch(error => {
@@ -489,11 +483,14 @@
         }
 
         function toggleWontDoStatus(todoId, buttonElement) {
-            fetch(`/todos/wontdo/${todoId}`, {
-                method: 'GET',
+            const currentlyWontDo = buttonElement.classList.contains('btn-dark');
+            const desired = !currentlyWontDo;
+            fetch(`/todos/${todoId}`, {
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
-                }
+                },
+                body: JSON.stringify({ wontDo: desired })
             })
             .then(response => response.json())
             .then(todo => {
@@ -609,11 +606,7 @@
                             <button class="btn btn-sm btn-success" onclick="toggleTodoStatus(${todo.id}, this)">
                                 Mark Complete
                             </button>
-                            <button class="btn btn-sm btn-secondary"
-                                    th:classappend="${todo.wontDo ? 'btn-dark' : ''}"
-                                    th:text="${todo.wontDo ? 'Undo Wont Do' : 'Wont Do'}"
-                                    th:onclick="'toggleWontDoStatus(' + ${todo.id} + ', this)'">
-                            </button>
+                            <button class="btn btn-sm btn-secondary" onclick="toggleWontDoStatus(${todo.id}, this)">Wont Do</button>
                             <a href="/todos/edit/${todo.id}" class="btn btn-sm btn-primary">Edit</a>
                             <button class="btn btn-sm btn-danger" onclick="deleteTodo(${todo.id}, this)">Delete</button>
                         </div>
@@ -628,15 +621,14 @@
                 return;
             }
 
-            fetch(`/todos/delete/${todoId}`, {
-                method: 'GET',
+            fetch(`/todos/${todoId}`, {
+                method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
                 }
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
+            .then(response => {
+                if (response.ok) {
                     const todoCard = buttonElement.closest('.card');
                     todoCard.style.animation = 'fadeOut 0.3s ease';
                     setTimeout(() => {
@@ -756,15 +748,14 @@
                 return;
             }
 
-            fetch(`/todos/subtasks/${subtaskId}/delete`, {
-                method: 'GET',
+            fetch(`/todos/subtasks/${subtaskId}`, {
+                method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
                 }
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
+            .then(response => {
+                if (response.ok) {
                     const subtaskItem = buttonElement.closest('.subtask-item');
                     const todoCard = subtaskItem.closest('.card');
                     const subtaskCount = todoCard.querySelector('.subtask-count');

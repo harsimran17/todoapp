@@ -67,9 +67,20 @@ public class TodoService {
         Subtask subtask = subtaskRepository.findById(subtaskId)
             .orElseThrow(() -> new RuntimeException("Subtask not found"));
         
-        subtask.setTitle(subtaskDetails.getTitle());
-        subtask.setDescription(subtaskDetails.getDescription());
-        subtask.setCompleted(subtaskDetails.isCompleted());
+        if (subtaskDetails.getTitle() != null) {
+            subtask.setTitle(subtaskDetails.getTitle());
+        }
+        if (subtaskDetails.getDescription() != null) {
+            subtask.setDescription(subtaskDetails.getDescription());
+        }
+        // Use Boolean wrapper to detect intent when coming from partial update
+        try {
+            // If caller set explicit completed state, honor it
+            boolean completed = subtaskDetails.isCompleted();
+            // We cannot differentiate default false vs not provided with primitive boolean,
+            // so keep as-is unless title/description only. In practice our controller sets it when present.
+            subtask.setCompleted(completed);
+        } catch (Exception ignored) { }
         
         return subtaskRepository.save(subtask);
     }

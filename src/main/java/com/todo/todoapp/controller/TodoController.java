@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -51,8 +54,9 @@ public class TodoController {
 
     @PostMapping
     @ResponseBody
-    public Todo createTodo(@RequestBody Todo todo) {
-        return todoService.saveTodo(todo);
+    public ResponseEntity<Todo> createTodo(@RequestBody Todo todo) {
+        Todo created = todoService.saveTodo(todo);
+        return ResponseEntity.created(URI.create("/todos/" + created.getId())).body(created);
     }
 
     @GetMapping("/edit/{id}")
@@ -62,57 +66,92 @@ public class TodoController {
         return "edit-todo";
     }
 
-    @PostMapping("/update/{id}")
+    @PutMapping("/{id}")
     @ResponseBody
-    public Todo updateTodo(@PathVariable Long id, @RequestBody Todo todo) {
-        return todoService.updateTodo(id, todo);
+    public ResponseEntity<Todo> updateTodo(@PathVariable Long id, @RequestBody Todo todo) {
+        Todo updated = todoService.updateTodo(id, todo);
+        return ResponseEntity.ok(updated);
     }
 
-    @GetMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     @ResponseBody
-    public Map<String, Boolean> deleteTodo(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteTodo(@PathVariable Long id) {
         todoService.deleteTodo(id);
-        return Map.of("success", true);
+        return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/toggle/{id}")
+    @PatchMapping("/{id}")
     @ResponseBody
-    public Todo toggleTodoStatus(@PathVariable Long id) {
+    public ResponseEntity<Todo> patchTodo(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
         Todo todo = todoService.getTodoById(id).orElseThrow();
-        todo.setCompleted(!todo.isCompleted());
-        return todoService.saveTodo(todo);
+
+        if (updates.containsKey("title")) {
+            todo.setTitle((String) updates.get("title"));
+        }
+        if (updates.containsKey("description")) {
+            todo.setDescription((String) updates.get("description"));
+        }
+        if (updates.containsKey("dueDate")) {
+            // Expecting ISO date string
+            todo.setDueDate(LocalDate.parse((String) updates.get("dueDate")));
+        }
+        if (updates.containsKey("completed")) {
+            todo.setCompleted(Boolean.TRUE.equals(updates.get("completed")));
+        }
+        if (updates.containsKey("wontDo")) {
+            todo.setWontDo(Boolean.TRUE.equals(updates.get("wontDo")));
+        }
+
+        Todo saved = todoService.saveTodo(todo);
+        return ResponseEntity.ok(saved);
     }
     
     // Subtask endpoints
     @PostMapping("/{todoId}/subtasks")
     @ResponseBody
-    public Subtask addSubtask(@PathVariable Long todoId, @RequestBody Subtask subtask) {
-        return todoService.addSubtask(todoId, subtask);
+    public ResponseEntity<Subtask> addSubtask(@PathVariable Long todoId, @RequestBody Subtask subtask) {
+        Subtask created = todoService.addSubtask(todoId, subtask);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .location(URI.create("/subtasks/" + created.getId()))
+                .body(created);
     }
     
-    @PostMapping("/subtasks/{subtaskId}/update")
+    @PatchMapping("/subtasks/{subtaskId}")
     @ResponseBody
-    public Subtask updateSubtask(@PathVariable Long subtaskId, @RequestBody Subtask subtask) {
-        return todoService.updateSubtask(subtaskId, subtask);
+    public ResponseEntity<Subtask> updateSubtask(@PathVariable Long subtaskId, @RequestBody Map<String, Object> updates) {
+        // Allow partial updates: title, description, completed
+        Subtask details = new Subtask();
+        if (updates.containsKey("title")) {
+            details.setTitle((String) updates.get("title"));
+        }
+        if (updates.containsKey("description")) {
+            details.setDescription((String) updates.get("description"));
+        }
+        if (updates.containsKey("completed")) {
+            details.setCompleted(Boolean.TRUE.equals(updates.get("completed")));
+        }
+        Subtask updated = todoService.updateSubtask(subtaskId, details);
+        return ResponseEntity.ok(updated);
     }
     
-    @GetMapping("/subtasks/{subtaskId}/delete")
+    @DeleteMapping("/subtasks/{subtaskId}")
     @ResponseBody
-    public Map<String, Boolean> deleteSubtask(@PathVariable Long subtaskId) {
+    public ResponseEntity<Void> deleteSubtask(@PathVariable Long subtaskId) {
         todoService.deleteSubtask(subtaskId);
-        return Map.of("success", true);
+        return ResponseEntity.noContent().build();
     }
     
-    @GetMapping("/subtasks/{subtaskId}/toggle")
-    @ResponseBody
-    public Subtask toggleSubtaskStatus(@PathVariable Long subtaskId) {
-        return todoService.toggleSubtaskStatus(subtaskId);
-    }
+    // (Removed duplicate PATCH mapping for subtasks)
 
-    @GetMapping("/wontdo/{id}")
+    @PatchMapping("/{id}/wontdo")
     @ResponseBody
-    public Todo toggleWontDoStatus(@PathVariable Long id) {
-        return todoService.toggleWontDoStatus(id);
+    public ResponseEntity<Todo> toggleWontDoStatus(@PathVariable Long id, @RequestBody(required = false) Map<String, Object> body) {
+        if (body != null && body.containsKey("wontDo")) {
+            Todo todo = todoService.getTodoById(id).orElseThrow();
+            todo.setWontDo(Boolean.TRUE.equals(body.get("wontDo")));
+            return ResponseEntity.ok(todoService.saveTodo(todo));
+        }
+        return ResponseEntity.ok(todoService.toggleWontDoStatus(id));
     }
   
     @GetMapping("/{todoId}/subtasks")

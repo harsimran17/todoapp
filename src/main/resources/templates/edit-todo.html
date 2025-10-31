@@ -181,18 +181,17 @@
     <script th:inline="javascript">
         function handleUpdateTodo(event) {
             event.preventDefault();
-            const form = event.target;
             const todoId = window.location.pathname.split('/').pop();
             
             const formData = {
-                title: form.title.value,
-                description: form.description.value,
-                dueDate: form.dueDate.value,
-                completed: form.completed.checked
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                dueDate: document.getElementById('dueDate').value,
+                completed: document.getElementById('completed').checked
             };
 
-            fetch(`/todos/update/${todoId}`, {
-                method: 'POST',
+            fetch(`/todos/${todoId}`, {
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -275,15 +274,14 @@
                 return;
             }
 
-            fetch(`/todos/subtasks/${subtaskId}/delete`, {
-                method: 'GET',
+            fetch(`/todos/subtasks/${subtaskId}`, {
+                method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
                 }
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
+            .then(response => {
+                if (response.ok) {
                     const subtaskItem = buttonElement.closest('.subtask-item');
                     subtaskItem.style.animation = 'fadeOut 0.3s ease';
                     setTimeout(() => {
@@ -316,45 +314,37 @@
         document.head.appendChild(style);
 
         function toggleSubtaskStatus(subtaskId, buttonElement) {
-            fetch(`/todos/subtasks/${subtaskId}/toggle`, {
-                method: 'GET',
+            const currentlyCompleted = buttonElement.classList.contains('btn-warning');
+            const desired = !currentlyCompleted;
+            fetch(`/todos/subtasks/${subtaskId}`, {
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
-                }
+                },
+                body: JSON.stringify({ completed: desired })
             })
-            .then(response => {
-                if (response.ok) {
-                    // Toggle the button text and class
-                    const button = buttonElement;
-                    const isCompleted = button.textContent.trim() === 'Undo';
-                    
-                    if (isCompleted) {
-                        button.textContent = 'Complete';
-                        button.className = 'btn btn-sm btn-success';
-                        // Remove completed styling from the subtask title
-                        const subtaskTitle = button.closest('.subtask-item').querySelector('span');
-                        subtaskTitle.classList.remove('text-decoration-line-through');
-                    } else {
-                        button.textContent = 'Undo';
-                        button.className = 'btn btn-sm btn-warning';
-                        // Add completed styling to the subtask title
-                        const subtaskTitle = button.closest('.subtask-item').querySelector('span');
-                        subtaskTitle.classList.add('text-decoration-line-through');
-                    }
-
-                    // Check all subtasks status and update parent todo checkbox
-                    const subtasksSection = button.closest('.mb-3');
-                    const allSubtaskItems = subtasksSection.querySelectorAll('.subtask-item');
-                    const allCompleted = Array.from(allSubtaskItems).every(item => 
-                        item.querySelector('button').textContent.trim() === 'Undo'
-                    );
-
-                    // Update parent todo checkbox
-                    const todoCheckbox = document.getElementById('completed');
-                    todoCheckbox.checked = allCompleted;
+            .then(response => response.json())
+            .then(subtask => {
+                const button = buttonElement;
+                const isCompleted = subtask.completed;
+                if (isCompleted) {
+                    button.textContent = 'Undo';
+                    button.className = 'btn btn-sm btn-warning';
+                    const subtaskTitle = button.closest('.subtask-item').querySelector('span');
+                    subtaskTitle.classList.add('text-decoration-line-through');
                 } else {
-                    console.error('Failed to toggle subtask status');
+                    button.textContent = 'Complete';
+                    button.className = 'btn btn-sm btn-success';
+                    const subtaskTitle = button.closest('.subtask-item').querySelector('span');
+                    subtaskTitle.classList.remove('text-decoration-line-through');
                 }
+                const subtasksSection = button.closest('.mb-3');
+                const allSubtaskItems = subtasksSection.querySelectorAll('.subtask-item');
+                const allCompleted = Array.from(allSubtaskItems).every(item => 
+                    item.querySelector('button').textContent.trim() === 'Undo'
+                );
+                const todoCheckbox = document.getElementById('completed');
+                todoCheckbox.checked = allCompleted;
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -364,11 +354,13 @@
         function toggleTodoStatus(checkbox) {
             const todoId = window.location.pathname.split('/').pop();
             
-            fetch(`/todos/toggle/${todoId}`, {
-                method: 'GET',
+            const desired = checkbox.checked;
+            fetch(`/todos/${todoId}`, {
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
-                }
+                },
+                body: JSON.stringify({ completed: desired })
             })
             .then(response => response.json())
             .then(todo => {
@@ -386,21 +378,19 @@
         function toggleWontDoStatusEdit() {
             const todoId = window.location.pathname.split('/').pop();
             const button = document.getElementById('wontDoBtn');
-            fetch(`/todos/wontdo/${todoId}`, {
-                method: 'GET',
+            const currentlyWontDo = button.classList.contains('btn-dark');
+            const desired = !currentlyWontDo;
+            fetch(`/todos/${todoId}`, {
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
-                }
+                },
+                body: JSON.stringify({ wontDo: desired })
             })
             .then(response => response.json())
             .then(todo => {
-                if (todo.wontDo) {
-                    button.textContent = 'Undo Wont Do';
-                    button.classList.add('btn-dark');
-                } else {
-                    button.textContent = 'Wont Do';
-                    button.classList.remove('btn-dark');
-                }
+                if (todo.wontDo) { button.textContent = 'Undo Wont Do'; button.classList.add('btn-dark'); }
+                else { button.textContent = 'Wont Do'; button.classList.remove('btn-dark'); }
                 showAlert(`Todo marked as ${todo.wontDo ? 'Wont Do' : 'active'}!`, 'info');
             })
             .catch(error => {
